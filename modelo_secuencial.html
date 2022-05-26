@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <title>TensorFlow - Primer parcial - Modelo Secuencial</title>
+  </head>
+
+  <body>
+    <h1>Ingrese un valor para predecir el valor de la siguiente formula:</h1>
+    <h2>y=3x+1</h2>
+    <input id="numero" />
+    <button id="boton">Predecir</button>
+
+    <div id="salida"></div>
+    <script>
+      const d = document;
+
+      const $div = d.getElementById("numero"),
+        $boton = d.getElementById("boton"),
+        $salida = d.getElementById("salida");
+      /* Modelo secuencial */
+      const modelo = tf.sequential();
+
+      const predecir = () => {
+        let numero = parseInt($div.value);
+        !numero
+          ? ($salida.innerText = "")
+          : ($salida.innerText = modelo.predict(tf.tensor2d([numero], [1, 1])));
+        console.log(modelo.predict(tf.tensor2d([numero], [1, 1])));
+      };
+
+      const removerEventoClic = () => {
+        $boton.removeEventListener("clic", removerEventoClic);
+        $boton.disabled = true;
+      };
+
+      const funcionLineal = async () => {
+        let numero = parseInt($div.value);
+
+        /* Se agrega una capa */
+        modelo.add(
+          tf.layers.dense({
+            units: 1,
+            inputShape: [1],
+          })
+        );
+
+        modelo.compile({
+          loss: "meanSquaredError",
+          optimizer: "sgd",
+        });
+
+        const xs = tf.tensor2d([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [10, 1]);
+        const ys = tf.tensor2d([1, 4, 7, 10, 13, 16, 19, 22, 25, 28], [10, 1]);
+
+        await modelo.fit(xs, ys, {
+          epochs: 450,
+        });
+        predecir();
+        removerEventoClic();
+      };
+
+      $div.addEventListener("keyup", predecir);
+
+      $boton.addEventListener("click", funcionLineal);
+
+      //nueva formula a seguir
+      // y = 3x+2
+    </script>
+  </body>
+</html>
